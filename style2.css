@@ -1,0 +1,133 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
+    background-color: #000;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Container */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.subtitle {
+    color: #bdbdbd;
+    max-width: 700px;
+    margin: 0 auto 60px auto;
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+.a1{
+    text-decoration: none;
+    
+}
+
+/* Wallet Grid */
+.wallet-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+/* Wallet Card */
+.wallet-card {
+    background: linear-gradient(145deg, #0f1c2e, #0b1624);
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.3s ease;
+    border: 9px solid rgba(255,255,255,0.05);
+}
+
+.wallet-card span {
+    flex: 1;
+    text-align: left;
+}
+
+.wallet-card:hover {
+    transform: translateY(-5px);
+    background: linear-gradient(145deg, #13233a, #0f1f33);
+    box-shadow: 0 8px 25px rgba(0, 140, 255, 0.2);
+}
+
+/* Background decorative dots */
+.background-dots {
+    position: fixed;
+    top: 100px;
+    width: 120px;
+    height: 200px;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.3) 2px, transparent 2px);
+    background-size: 20px 20px;
+    opacity: 0.3;
+}
+
+.background-dots.left {
+    left: 40px;
+}
+
+.background-dots.right {
+    right: 40px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 36px;
+    }
+
+    .wallet-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.wallet-card {
+    background: linear-gradient(145deg, #0f1c2e, #0b1624);
+    padding: 28px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.wallet-card img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    background: #111;
+    padding: 6px;
+    border-radius: 8px;
+}
+
+.wallet-card span {
+    flex: 1;
+    text-align: left;
+    color: #fff;
+}

