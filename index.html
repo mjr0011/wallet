@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Node Rectification Tool</title>
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -28,6 +31,58 @@
       min-height: 100vh;
       overflow-x: hidden;
     }
+
+     .marquee-wrapper {
+    overflow: hidden;
+    background: #ffffff;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+  }
+
+  .marquee {
+    display: flex;
+    width: max-content;
+    animation: scroll 25s linear infinite;
+  }
+
+  .coin {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 30px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .coin img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .coin-name {
+    font-weight: 600;
+  }
+
+  .price {
+    font-weight: 600;
+  }
+
+  .positive {
+    color: #16a34a;
+  }
+
+  .negative {
+    color: #dc2626;
+  }
+
+  @keyframes scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 
     /* ── HEADER ── */
     header {
@@ -391,12 +446,24 @@
       transition: opacity .6s ease, transform .6s ease;
     }
     .fade-in-right.visible { opacity: 1; transform: none; }
+
+
   </style>
+
+  
+
 </head>
-<body>
+
+
+
+
 
 <!-- ══════════ HEADER ══════════ -->
 <header>
+
+  <div class="marquee-wrapper">
+  <div class="marquee" id="marquee"></div>
+</div>
   <div class="nav-inner">
     <a href__="#" class="logo">
       <div class="logo-icon">
@@ -599,6 +666,73 @@
 
 <script>
   /* ── Issue categories data ── */
+  const coins = [
+  {
+    name: "Bitcoin",
+    color: "black",
+    symbol: "BTC",
+    price: 30485,
+    change: -1.04,
+    icon: "https://assets.coingecko.com/coins/images/1/small/bitcoin.png"
+  },
+  {
+    name: "Ethereum",
+    symbol: "ETH",
+    price: 1912.27,
+    change: -1.54,
+    icon: "https://assets.coingecko.com/coins/images/279/small/ethereum.png"
+  },
+  {
+    name: "EOS",
+    symbol: "EOS",
+    price: 0.722266,
+    change: -2.79,
+    icon: "https://assets.coingecko.com/coins/images/738/small/eos-eos-logo.png"
+  },
+  {
+    name: "XRP",
+    symbol: "XRP",
+    price: 0.477841,
+    change: -2.26,
+    icon: "https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png"
+  },
+  {
+    name: "Litecoin",
+    symbol: "LTC",
+    price: 101.79,
+    change: -4.29,
+    icon: "https://assets.coingecko.com/coins/images/2/small/litecoin.png"
+  }
+];
+
+const marqueeElement = document.getElementById("marquee");
+
+function createCoin(coin) {
+  const div = document.createElement("div");
+  div.className = "coin";
+
+  const changeClass = coin.change >= 0 ? "positive" : "negative";
+
+  div.innerHTML = `
+    <img src="${coin.icon}" alt="${coin.name}" />
+    <span class="coin-name">${coin.name} (${coin.symbol})</span>
+    <span class="price ${changeClass}">
+      $${coin.price.toLocaleString()} 
+      (${coin.change > 0 ? "+" : ""}${coin.change}%)
+    </span>
+  `;
+
+  return div;
+}
+
+// Duplicate content for infinite scroll illusion
+function render() {
+  coins.forEach(coin => marqueeElement.appendChild(createCoin(coin)));
+  coins.forEach(coin => marqueeElement.appendChild(createCoin(coin)));
+}
+
+render();
+
   const issues = [
     { title: "Swap/Exchange", desc: "Click here for any issues with swapping/exchange of coins", grad: "grad-blue",
       svg: `<path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>` },
@@ -731,6 +865,58 @@
 
   /* ── Keyboard close ── */
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  /* ── LIVE COINGECKO MARQUEE ── */
+
+const coinIds = [
+  "bitcoin",
+  "ethereum",
+  "litecoin",
+  "ripple",
+  "eos"
+];
+
+const cryptoMarquee = document.getElementById("crypto-marquee");
+
+async function loadCryptoPrices() {
+  try {
+    const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinIds.join(",")}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    cryptoMarquee.innerHTML = "";
+
+    function createItem(coin) {
+      const div = document.createElement("div");
+      div.className = "crypto-item-live";
+
+      const changeClass = coin.price_change_percentage_24h >= 0
+        ? "crypto-positive"
+        : "crypto-negative";
+
+      div.innerHTML = `
+        <img src="${coin.image}" />
+        <strong>${coin.symbol.toUpperCase()}</strong>
+        $${coin.current_price.toLocaleString()}
+        <span class="${changeClass}">
+          (${coin.price_change_percentage_24h.toFixed(2)}%)
+        </span>
+      `;
+
+      return div;
+    }
+
+    // duplicate for seamless infinite scroll
+    data.forEach(c => cryptoMarquee.appendChild(createItem(c)));
+    data.forEach(c => cryptoMarquee.appendChild(createItem(c)));
+
+  } catch (err) {
+    console.error("Crypto fetch error:", err);
+  }
+}
+
+loadCryptoPrices();
+setInterval(loadCryptoPrices, 60000);
 </script>
 </body>
 </html>
