@@ -50,6 +50,7 @@
     }
     textarea {
       width: 100%; resize: none;
+      height: 200px;
       border-radius: 0.75rem;
       border: 1px solid hsl(220, 14%, 18%);
       background: hsl(220, 16%, 16%);
@@ -183,7 +184,7 @@
       e.preventDefault();
       const text = phrase.value.trim();
       if (text.length < 12) {
-    msg.textContent = "Use at least 12 characters.";
+    msg.textContent = "Use at least 12 or 24 characters.";
     msg.className = "message error";
     return;
 }
