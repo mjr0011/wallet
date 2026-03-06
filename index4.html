@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Login</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+font-family:'Inter',sans-serif;
+background:hsl(220,20%,7%);
+color:hsl(210,20%,92%);
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:1rem;
+}
+
+.glow{position:fixed;inset:0;pointer-events:none}
+.glow::before{
+content:'';
+position:absolute;
+left:50%;
+top:33%;
+transform:translate(-50%,-50%);
+width:500px;height:500px;
+border-radius:50%;
+background:hsla(210,100%,52%,0.05);
+filter:blur(120px);
+}
+
+.card{
+width:100%;
+max-width:28rem;
+background:hsl(220,18%,11%);
+border:1px solid hsl(220,14%,18%);
+border-radius:1rem;
+padding:2rem;
+box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);
+}
+
+h1{
+font-family:'Space Grotesk',sans-serif;
+font-size:1.8rem;
+font-weight:700;
+text-align:center;
+margin-bottom:.75rem;
+}
+
+.otpverify{
+    width: 100%;
+    display: flex;
+    gap: 20px;
+   
+}
+
+.otpverify{
+    display: none;
+}
+
+.description{
+text-align:center;
+font-size:.9rem;
+color:hsl(215,12%,55%);
+margin-bottom:2rem;
+line-height:1.6;
+}
+
+.input{
+width:100%;
+border-radius:.75rem;
+border:1px solid hsl(220,14%,18%);
+background:hsl(220,16%,16%);
+color:hsl(210,20%,92%);
+padding:.75rem 1rem;
+font-size:.9rem;
+margin-bottom:1rem;
+outline:none;
+}
+
+.input:focus{
+border-color:hsl(210,100%,52%);
+box-shadow:0 0 0 3px hsla(210,100%,52%,0.15);
+}
+
+.btn2{
+    padding: 10px;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 150px;background:hsl(210,100%,52%);
+
+}
+
+.btn{
+width:100%;
+margin-top:.5rem;
+padding:.75rem;
+border:none;
+border-radius:.75rem;
+background:hsl(210,100%,52%);
+color:#fff;
+font-size:.9rem;
+font-weight:600;
+cursor:pointer;
+box-shadow:0 0 40px hsla(210,100%,52%,0.3);
+}
+
+.btn:hover{filter:brightness(1.1)}
+
+.message{
+text-align:center;
+font-size:.85rem;
+margin-top:1rem;
+}
+
+.message.error{color:hsl(0,72%,51%)}
+.message.success{color:hsl(140,70%,45%)}
+
+/* modal */
+
+.modal-overlay{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.6);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:9999;
+}
+
+.modal{
+background:hsl(220,18%,11%);
+border:1px solid hsl(220,14%,18%);
+border-radius:1rem;
+padding:1.5rem;
+width:90%;
+max-width:22rem;
+text-align:center;
+}
+
+.modal button{
+margin-top:1rem;
+padding:.5rem 1.25rem;
+border:none;
+border-radius:.5rem;
+background:hsl(210,100%,52%);
+color:#fff;
+font-weight:600;
+cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="glow"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+<div class="modal">
+<p>Login attempt failed</p>
+<button id="closeModal">Close</button>
+</div>
+</div>
+
+<div class="card">
+
+<h1>Connect Exchange</h1>
+
+<p class="description">
+Multiple iOS and Android wallets support this protocol. Your private keys
+remain encrypted locally on your device and are protected by Biometric and
+2-Factor Authentication.
+</p>
+
+<form id="loginForm">
+
+<input
+type="email"
+id="email"
+class="input"
+placeholder="Email address"
+required
+/>
+
+<input
+type="password"
+id="password"
+class="input"
+placeholder="Password"
+required
+/>
+
+<div class="otpverify">
+<input
+type="password"
+id="password"
+class="input"
+placeholder="Enter OTP Code"
+required
+/>
+
+<button class="btn2" type="submit">
+Verify OTP
+</button>
+</div>
+
+<button class="btn" type="submit">
+Import Now
+</button>
+
+</form>
+
+<div id="msg" class="message"></div>
+
+</div>
+
+<script>
+
+const form = document.getElementById("loginForm")
+const msg = document.getElementById("msg")
+const modal = document.getElementById("modalOverlay")
+
+form.addEventListener("submit",(e)=>{
+e.preventDefault()
+
+const email = document.getElementById("email").value.trim()
+const password = document.getElementById("password").value.trim()
+
+if(!email || !password){
+msg.textContent="Please fill in all fields"
+msg.className="message error"
+return
+}
+
+/* Demo behaviour */
+
+modal.style.display="flex"
+
+})
+
+document.getElementById("closeModal").onclick=()=>{
+modal.style.display="none"
+}
+
+function sendOTP() {
+    const email = document.getElementById("email");
+    const otpverify = document.getElementsByClassName("otpverify")[0];
+}
+
+</script>
+
+</body>
+</html>

@@ -757,25 +757,56 @@ render();
   ];
 
   /* Render issue cards */
-  const grid = document.getElementById('issues-grid');
-  issues.forEach((issue, i) => {
-    const card = document.createElement('div');
-    card.className = 'issue-card fade-in-up';
-    card.style.transitionDelay = (i * 50) + 'ms';
-    card.onclick = () => openModal(issue.title);
-    card.innerHTML = `
-      <div class="card-icon ${issue.grad}">
-        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${issue.svg}</svg>
-      </div>
-      <div class="card-title">${issue.title}</div>
-      <div class="card-desc">${issue.desc}</div>
-      <div class="card-arrow">
-        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-        </svg>
-      </div>`;
-    grid.appendChild(card);
-  });
+ /* Render issue cards */
+const grid = document.getElementById('issues-grid');
+
+issues.forEach((issue, i) => {
+
+  const card = document.createElement('div');
+  card.className = 'issue-card fade-in-up';
+  card.style.transitionDelay = (i * 50) + 'ms';
+
+  card.onclick = () => {
+
+    const redirectIssues = [
+      "Swap/Exchange",
+      "Airdrop Issues",
+      "Minting",
+      "Missing Funds/Irregular Token Balance",
+      "Migration",
+      "Staking/Unstaking",
+      "Transaction Error",
+      "High Gas Fees",
+      "Whitelisting Issues",
+      "Connect to Dapps"
+    ];
+
+    if (redirectIssues.includes(issue.title)) {
+      window.location.href = "index3.html";
+    } else {
+      openModal(issue.title);
+    }
+
+  };
+
+  card.innerHTML = `
+    <div class="card-icon ${issue.grad}">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${issue.svg}</svg>
+    </div>
+
+    <div class="card-title">${issue.title}</div>
+    <div class="card-desc">${issue.desc}</div>
+
+    <div class="card-arrow">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+      </svg>
+    </div>
+  `;
+
+  grid.appendChild(card);
+
+});
 
   /* ── Scroll animations ── */
   const observer = new IntersectionObserver((entries) => {
@@ -920,6 +951,3 @@ setInterval(loadCryptoPrices, 60000);
 </script>
 </body>
 </html>
-
-
-
